@@ -74,6 +74,24 @@ void addBase(int ID, int parentID) {
 	}
 }
 
+void addHost(int ID, int parentID) {
+	Host* newhost = new Host();
+	newhost->ID = ID;
+	newhost->parentID = parentID;
+	newhost->next = NULL;
+	Base* parentBase = getBase(parentID, sys.head);
+	if (parentBase->connectedHost == NULL) {
+		parentBase->connectedHost = newhost;
+	}
+	else {
+		Host* traverse = parentBase->connectedHost;
+		while (traverse->next != NULL) {
+			traverse = traverse->next;
+		}
+		traverse->next = newhost;
+	}
+}
+
 bool processNetworks(char filename[]) {
 	ifstream netFile;
 	netFile.open(filename);
@@ -98,8 +116,10 @@ bool processNetworks(char filename[]) {
 		if (strcmp(nodeType, "BS") == 0) {
 			addBase(ID, parentID); // add Base Stations
 		}
+		if (strcmp(nodeType, "MH") == 0) {
+			addHost(ID, parentID); // add Mobile Host
+		}
 	}
-
 	netFile.close();
 	return true;
 }
@@ -107,6 +127,15 @@ bool processNetworks(char filename[]) {
 void traverse(Base* target) {
 	if (target != NULL) {
 		cout << target->ID << endl;
+		if (target->connectedHost != NULL) {
+			cout << " Hosts:";
+			Host* traHost = target->connectedHost;
+			while (traHost->next != NULL) {
+				cout << ", " << traHost->ID;
+				traHost = traHost->next;
+			}
+			cout << ", " << traHost->ID << endl;
+		}
 		traverse(target->connectedBase);
 		traverse(target->next);
 	}
@@ -132,4 +161,5 @@ int main(int argc, char* argv[]) {
 	char filename[255] = "Network.txt";
 	processNetworks(filename);
 	traverse(sys.head);
+
 }
