@@ -128,7 +128,6 @@ void traverse(Base* target) {
 	if (target != NULL) {
 		cout << target->ID << endl;
 		if (target->connectedHost != NULL) {
-			cout << " Hosts:";
 			Host* traHost = target->connectedHost;
 			while (traHost->next != NULL) {
 				cout << ", " << traHost->ID;
@@ -139,6 +138,73 @@ void traverse(Base* target) {
 		traverse(target->connectedBase);
 		traverse(target->next);
 	}
+}
+
+Host* checkHost(Base* target, int ID) {
+	Host* search = NULL;
+	if (target != NULL) {
+		cout << target->ID << " ";
+		Host* traHost = target->connectedHost;
+		while (traHost != NULL) {
+			if (traHost->ID == ID) {
+				return traHost;
+			}
+			traHost = traHost->next;
+		}
+		search = checkHost(target->connectedBase, ID);
+		if (search != NULL) {
+			return search;
+		}
+		else {
+			search = checkHost(target->next, ID);
+		}
+	}
+	return search;
+}
+
+void printMessage(char message[], int ID) {
+	cout << "Traversing:";
+	Host* target = checkHost(sys.head, ID);
+	cout << endl;
+	if (target != NULL) {
+		Base* parentBase = getBase(target->parentID, sys.head);
+		int loc[255];
+		int i = 0;
+		loc[i] = parentBase->ID;
+		while (parentBase->parentID != -1) {
+			parentBase = getBase(parentBase->parentID, sys.head);
+			loc[++i] = parentBase->ID;
+		}
+		cout << "Message:" << message << " To:";
+		for (int k = i; k >= 0; k--) {
+			cout << loc[k] << " ";
+		}
+		cout << "mh_" << ID << endl;
+	}
+	else {
+		cout << "Can not be reached the mobile host mh_" << ID << " at the moment" << endl;
+	}
+}
+
+void processMessages(char filename[]) {
+	ifstream msgFile;
+	msgFile.open(filename);
+
+	if (!msgFile) {
+		cerr << "Could not open " << filename << endl;
+	}
+
+	while (msgFile.peek() != EOF) {
+		char message[255];
+		char temp[10];
+		int ID;
+		msgFile.getline(message, 255, '>');
+		msgFile.getline(temp, 10, '\n');
+		ID = atoi(temp);
+		printMessage(message, ID);
+	}
+
+	msgFile.close();
 }
 
 int main(int argc, char* argv[]) {
@@ -158,8 +224,9 @@ int main(int argc, char* argv[]) {
 			cout << "./executable network_file_name messages_file_name" << endl;
 		}
 	}*/
-	char filename[255] = "Network.txt";
-	processNetworks(filename);
-	traverse(sys.head);
-
+	char netfilename[255] = "Network.txt";
+	processNetworks(netfilename);
+	char msgfilename[255] = "Messages.txt";
+	processMessages(msgfilename);
+	//traverse(sys.head);
 }
