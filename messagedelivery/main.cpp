@@ -22,12 +22,32 @@ struct Base { // referred to Base Station as Base
 struct List {
 	Base* head; // points to Central Controller
 	void create();
+	void close(Base* target);
 };
 
 List sys;
 
 void List::create() {
 	List::head = NULL;
+}
+
+void List::close(Base* target) {
+	if (target != NULL) {
+		close(target->connectedBase);
+		close(target->next);
+		if (target->connectedHost != NULL) {
+			Host* traHost = target->connectedHost;
+			Host* temp;
+			while (traHost != NULL) {
+				temp = traHost;
+				traHost = traHost->next;
+				//cout << "Deleted Host: " << temp->ID << " which was connected to Base: " << temp->parentID << endl;
+				delete temp;
+			}
+		}
+		//cout << "Deleted Base: " << target->ID << " which was connected to Base: " << target->parentID << endl;
+		delete target;
+	}
 }
 
 Base* getBase(int ID, Base* target) {
@@ -123,23 +143,7 @@ bool processNetworks(char filename[]) {
 
 	return true;
 }
-/*
-void traverse(Base* target) {
-	if (target != NULL) {
-		cout << target->ID << endl;
-		if (target->connectedHost != NULL) {
-			Host* traHost = target->connectedHost;
-			while (traHost->next != NULL) {
-				cout << ", " << traHost->ID;
-				traHost = traHost->next;
-			}
-			cout << ", " << traHost->ID << endl;
-		}
-		traverse(target->connectedBase);
-		traverse(target->next);
-	}
-}
-*/
+
 Host* findHost(Base* target, int ID) {
 	Host* search = NULL;
 	if (target != NULL) {
@@ -214,34 +218,31 @@ bool processMessages(char filename[]) {
 
 int main(int argc, char* argv[]) {
 	sys.create(); // initiate the list
-	addBase(0, -1); // add head base
+	addBase(0, -1); // add Central Controller to the list
 	/*
 	if (argc == 3) {
-		// argv[1] network_file_name
-		processNetworks(argv[1]);
-		processMessages(argv[2]);
-		// argv[2] messages_file_name
+		processNetworks(argv[1]); // argv[1] network_file_name
+		processMessages(argv[2]); // argv[2] messages_file_name
 	}
 	else {
 		char netfilename[255] = "Network.txt";
 		if (!processNetworks(netfilename)) {
-			cout << "ERROR: Too many or too less arguments" << endl;
+			cout << "Too many or too less arguments" << endl;
 			cout << "Execute the program using:" << endl;
 			cout << "./executable network_file_name messages_file_name" << endl;
 			return 1;
 		}
 		char msgfilename[255] = "Messages.txt";
 		if (!processMessages(msgfilename)) {
-			cout << "ERROR: Too many or too less arguments" << endl;
+			cout << "Too many or too less arguments" << endl;
 			cout << "Execute the program using:" << endl;
 			cout << "./executable network_file_name messages_file_name" << endl;
 			return 1;
 		}
-		processMessages(msgfilename);
 	}*/
 	char netfilename[255] = "Network.txt";
 	processNetworks(netfilename);
 	char msgfilename[255] = "Messages.txt";
 	processMessages(msgfilename);
-	//traverse(sys.head);
+	sys.close(sys.head);
 }
