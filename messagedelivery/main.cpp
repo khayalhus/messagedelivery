@@ -1,6 +1,5 @@
 #include <fstream>
 #include <iostream>
-#include <string>
 #include <string.h> 
 
 using namespace std;
@@ -219,7 +218,7 @@ bool processMessages(char filename[]) {
 int main(int argc, char* argv[]) {
 	sys.create(); // initiate the list
 	addBase(0, -1); // add Central Controller to the list
-	/*
+
 	if (argc == 3) {
 		processNetworks(argv[1]); // argv[1] network_file_name
 		processMessages(argv[2]); // argv[2] messages_file_name
@@ -239,10 +238,7 @@ int main(int argc, char* argv[]) {
 			cout << "./executable network_file_name messages_file_name" << endl;
 			return 1;
 		}
-	}*/
-	char netfilename[255] = "Network.txt";
-	processNetworks(netfilename);
-	char msgfilename[255] = "Messages.txt";
-	processMessages(msgfilename);
-	sys.close(sys.head);
+	}
+
+	sys.close(sys.head); // give memory back
 }
